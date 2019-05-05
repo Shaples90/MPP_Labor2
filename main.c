@@ -4,7 +4,7 @@
 
 void wait(unsigned long time)
 {
-   for (unsigned long i = 0; i < time; i++);
+   for (unsigned long i = 0; i < time; i++);                // wait-loop
 }
 
 void main(int argc, char const *argv[])
