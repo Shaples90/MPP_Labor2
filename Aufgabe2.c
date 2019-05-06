@@ -34,7 +34,7 @@ void main(int argc, char const *argv[])
       TIMER0_CTL_R |= 0x01;                                 // re-enable Timer0A
       while((TIMER0_RIS_R & (1 << 2)) == 0);                // wait for capture event
       measureDistance = TIMER0_TAR_R * 34.3;                // calculate measureDistance in cm
-      printf("measure distance is: %lf", measureDistance);  // print measureDistance on console
+      printf("measure distance is: %lf\n", measureDistance);  // print measureDistance on console
       TIMER0_ICR_R |= (1 << 2);                             // clear capture event flag
    }
 }
