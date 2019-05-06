@@ -1,4 +1,4 @@
-// Versuch 2 Aufgabe 1
+// Laborversuch 2 Aufgabe 1
 
 #include <stdio.h>
 #include <stdint.h>
