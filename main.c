@@ -24,12 +24,12 @@ void main(int argc, char const *argv[])
       if(old_input != new_input)                            // compare old with new input signal
       {
          GPIO_PORTM_DATA_R |= 0xFF;                         // high output signal to PM(0:7)
-         wait(100);
+         wait(100);                                         // wait output signal until it reachess the LEDs
       }
       else
       {
          GPIO_PORTM_DATA_R &= 0x00;                         // low output signal to PM(0:7)
-         wait(100);
+         wait(100);                                         // wait output signal until it reachess the LEDs
       }
       old_input = new_input;                                // store new to old input signal
    }
