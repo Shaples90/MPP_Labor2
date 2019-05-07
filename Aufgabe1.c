@@ -31,8 +31,8 @@ void main(int argc, char const *argv[])
       else
       {
          GPIO_PORTM_DATA_R &= 0x00;                         // low output signal to PM(0:7)
-         wait(100);                                         // wait output signal until it reachess the LEDs
+         wait(100);                                         // wait output signals until they arrive
       }
-      old_input = new_input;                                // store new to old input signal
+      old_input = new_input;                                // store new signal to old input signal
    }
 }
