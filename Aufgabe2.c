@@ -1,4 +1,5 @@
 // Laborversuch 2 Aufgabe 2
+// Vorlesung Seite 96 - 99
 
 #include <stdio.h>
 #include <stdint.h>
@@ -6,7 +7,7 @@
 
 void main(int argc, char const *argv[])
 {
-   unsigned long measureDistance;         // local measureDistance storage
+   unsigned short measureDistance;         // local measureDistance storage
 
    // configure PD(0)
    SYSCTL_RCGCGPIO_R |= (1 << 3);         // clock enable port D
@@ -33,7 +34,7 @@ void main(int argc, char const *argv[])
       TIMER0_ICR_R |= (1 << 2);                                // clear Timer0a capture event flag
       TIMER0_CTL_R |= 0x01;                                    // re-enable Timer0A
       while((TIMER0_RIS_R & (1 << 2)) == 0);                   // wait for capture event
-      measureDistance = (TIMER0_TAR_R * 0.001) * 34.3;         // calculate measureDistance in cm
+      measureDistance = ((((unsigned short) (0xFFFF - TIMER0_TAR_R)) / 16) * 0.001) * 34.3;         // calculate measureDistance in cm
       printf("measure distance is: %lf\n", measureDistance);   // print measureDistance on console
       TIMER0_ICR_R |= (1 << 2);                                // clear capture event flag
    }
