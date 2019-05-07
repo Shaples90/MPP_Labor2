@@ -1,7 +1,0 @@
-{
-   "files.associations": {
-      "stdio.h": "c",
-      "stdint.h": "c",
-      "tm4c1294ncpdt.h": "c"
-   }
-}
