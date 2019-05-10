@@ -25,7 +25,6 @@ void main(int argc, char const *argv[])
    GPIO_PORTD_DATA_R |= 0x02;                // PD(1) to High
 
    // configure Timer 0
-
    SYSCTL_RCGCTIMER_R |= (1 << 0);        // clock enable Timer0
    while(!(SYSCTL_PRTIMER_R & (1 << 0))); // wait for Timer0 clock
    TIMER0_CTL_R &= ~0x01;                 // disable Timer0 for config
