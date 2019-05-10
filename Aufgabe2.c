@@ -45,7 +45,7 @@ void main(int argc, char const *argv[])
       while((TIMER0_RIS_R & (1 << 2)) == 0);                               // wait for capture event
       timeMicroSeconds = ((unsigned short) (0xFFFF - TIMER0_TAR_R)) / 16;  // measured time in micro seconds
       timeMilliSeconds = timeMicroSeconds * 0.001;                         // measured time in milli seconds
-      measureDistance = timeMilliSeconds * 34,4;                           // measured Distance in cm
+      measureDistance = timeMilliSeconds * 34.4;                           // measured Distance in cm
       printf("measure distance is: %d\n", measureDistance);                // print measureDistance on console
       TIMER0_ICR_R |= (1 << 2);                                            // clear capture event flag
       GPIO_PORTD_DATA_R |= 0x02;                                           // PD(1) to High
