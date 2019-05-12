@@ -58,7 +58,7 @@ void configureTimer(void)
    TIMER0_ICR_R |= 0x001F;                // clear all flags Timer0A
    TIMER0_CTL_R |= 0x01;                  // enable Timer0A
 
-   // configure Timer 1 for swinging-led-area
+   // configure Timer 1 for swinging-led-area (24ms)
    SYSCTL_RCGCTIMER_R |= (1 << 1);        // clock enable Timer1
    while(!(SYSCTL_PRTIMER_R & (1 << 1))); // wait for Timer1 clock
    TIMER1_CTL_R &= ~0x01;                 // disable Timer1A for config
@@ -80,7 +80,7 @@ void configureTimer(void)
 
 //*****************************************************************************
 //
-// LED-number-output
+// LED-number-output function
 //
 //*****************************************************************************
 void ledOutputDigit(int digit, unsigned short input)
@@ -342,7 +342,7 @@ void ledOutputDigit(int digit, unsigned short input)
 
 //*****************************************************************************
 //
-// LED-space-output
+// LED-space-output function
 //
 //*****************************************************************************
 void ledSpaceOutput(void)
@@ -355,7 +355,7 @@ void ledSpaceOutput(void)
 
 //*****************************************************************************
 //
-// LED-letter-c-output
+// LED-letter-output functions
 //
 //*****************************************************************************
 void ledOutputLetterC(unsigned char input)
@@ -385,11 +385,6 @@ void ledOutputLetterC(unsigned char input)
    }
 }
 
-//*****************************************************************************
-//
-// LED-letter-m-output
-//
-//*****************************************************************************
 void ledOutputLetterM(unsigned char input)
 {
    unsigned char arrm[5] = LED_C;
@@ -425,12 +420,12 @@ void ledOutputLetterM(unsigned char input)
 void main(int argc, char const *argv[])
 { 
    int measureDistance, timeMicroSeconds, timeMilliSeconds, firstDigit, secondDigit, changeDigit;
-   unsigned char old_input, new_input = 0x00;          
+   unsigned char oldPendulumInput, newPendulumInput = 0x00;          
 
    configurePorts();
    configureTimer();
    
-   GPIO_PORTD_DATA_R |= 0x02;    // PD(1) to High for measure-trigger
+   GPIO_PORTD_DATA_R |= 0x02; // PD(1) to High for measure-trigger
 
    while (1)
    {
@@ -448,39 +443,40 @@ void main(int argc, char const *argv[])
       timeMilliSeconds = timeMicroSeconds * 0.001;                         // measured time in milli seconds
       measureDistance = timeMilliSeconds * 34.4;                           // measured time * rate of spread
       TIMER0_ICR_R |= (1 << 2);                                            // clear capture event flag
-      GPIO_PORTD_DATA_R |= 0x02;                                           // PD(1) to High
-
+      
       firstDigit = measureDistance / 10;           // locally save firstDigit of measured distance
       changeDigit = firstDigit;
       changeDigit *= 10;
       secondDigit = measureDistance - changeDigit; // locally save secondDigit of measured distance
+
+      GPIO_PORTD_DATA_R |= 0x02; // PD(1) to High for measure-trigger
 
       //*****************************************************************************
       //
       // positive edge swinging-LED
       //
       //***************************************************************************** 
-      new_input = GPIO_PORTL_DATA_R;                        // PL(0) read input edge
-      if((old_input != new_input) && (new_input == 0x01))   // positive-edge-signal
+      newPendulumInput = GPIO_PORTL_DATA_R;                                      // PL(0) read input edge
+      if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x01))   // positive-edge-signal
       {  
-         TIMER1_CTL_R |= 0x01;                              // enable Timer1A
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // low output signal to PM(7:0) 
-         while((TIMER1_RIS_R & (1 << 4)) == 0);             // match value after 18ms
-         TIMER1_ICR_R |= (1 << 4);                          // clear Timer1A match flag
+         TIMER1_CTL_R |= 0x01;                  // enable Timer1A
+         GPIO_PORTM_DATA_R &= ~0xFF;            // low output signal to PM(7:0) 
+         while((TIMER1_RIS_R & (1 << 4)) == 0); // match value after 18ms
+         TIMER1_ICR_R |= (1 << 4);              // clear Timer1A match flag
 
-         ledOutputDigit(firstDigit, new_input);         
+         ledOutputDigit(firstDigit, newPendulumInput);         
          ledSpaceOutput();         
-         ledOutputDigit(secondDigit, new_input);
+         ledOutputDigit(secondDigit, newPendulumInput);
          ledSpaceOutput();
          ledSpaceOutput();
-         ledOutputLetterC(new_input);
+         ledOutputLetterC(newPendulumInput);
          ledSpaceOutput();
-         ledOutputLetterM(new_input);
+         ledOutputLetterM(newPendulumInput);
 
          // end of measure display
-         while((TIMER1_RIS_R & (1 << 0)) == 0);             // time-out after 42ms
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
-         TIMER1_ICR_R |= (1 << 0);                          // clear Timer1A time-out flag                                              
+         while((TIMER1_RIS_R & (1 << 0)) == 0); // time-out after 42ms
+         GPIO_PORTM_DATA_R &= ~0xFF;            // PM(7:0) to LOW
+         TIMER1_ICR_R |= (1 << 0);              // clear Timer1A time-out flag                                              
       }
 
       //*****************************************************************************
@@ -488,27 +484,27 @@ void main(int argc, char const *argv[])
       // negative edge swinging-LED
       //
       //***************************************************************************** 
-      else if((old_input != new_input) && (new_input == 0x00)) // negative-edge-signal
+      else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x00)) // negative-edge-signal
       {
-         TIMER1_CTL_R |= 0x01;                                 // enable Timer1A
-         GPIO_PORTM_DATA_R &= ~0xFF;                           // low output signal to PM(7:0) 
-         while((TIMER1_RIS_R & (1 << 4)) == 0);                // match value after 18ms
-         TIMER1_ICR_R |= (1 << 4);                             // clear Timer1A match flag
+         TIMER1_CTL_R |= 0x01;                  // enable Timer1A
+         GPIO_PORTM_DATA_R &= ~0xFF;            // low output signal to PM(7:0) 
+         while((TIMER1_RIS_R & (1 << 4)) == 0); // match value after 18ms
+         TIMER1_ICR_R |= (1 << 4);              // clear Timer1A match flag
 
-         ledOutputLetterM(new_input);
+         ledOutputLetterM(newPendulumInput);
          ledSpaceOutput();
-         ledOutputLetterC(new_input);
+         ledOutputLetterC(newPendulumInput);
          ledSpaceOutput();
          ledSpaceOutput();
-         ledOutputDigit(secondDigit, new_input);
+         ledOutputDigit(secondDigit, newPendulumInput);
          ledSpaceOutput();
-         ledOutputDigit(firstDigit, new_input);
+         ledOutputDigit(firstDigit, newPendulumInput);
          
          // end of measure display
-         while((TIMER1_RIS_R & (1 << 0)) == 0);             // time-out after 42ms
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
-         TIMER1_ICR_R |= (1 << 0);                          // clear Timer1A time-out flag 
+         while((TIMER1_RIS_R & (1 << 0)) == 0); // time-out after 42ms
+         GPIO_PORTM_DATA_R &= ~0xFF;            // PM(7:0) to LOW
+         TIMER1_ICR_R |= (1 << 0);              // clear Timer1A time-out flag 
       }
-      old_input = new_input;                                // store new signal to old input signal
+      oldPendulumInput = newPendulumInput;   // store new signal to old input signal
    }
 }
