@@ -393,11 +393,6 @@ void main(int argc, char const *argv[])
          while((TIMER1_RIS_R & (1 << 4)) == 0);             // match value after 18ms
          TIMER1_ICR_R |= (1 << 4);                          // clear Timer1A match flag
 
-         //*****************************************************************************
-         //
-         // first number of measure distance
-         //
-         //***************************************************************************** 
          outputDigit(firstDigit, new_input);
          
          // one void column
@@ -406,11 +401,6 @@ void main(int argc, char const *argv[])
          while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
          TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
          
-         //*****************************************************************************
-         //
-         // second number of measure distance
-         //
-         //***************************************************************************** 
          outputDigit(secondDigit, new_input);
 
          // two void columns
@@ -421,13 +411,7 @@ void main(int argc, char const *argv[])
          TIMER2_CTL_R |= 0x01;                              // re-enable Timer2A
          while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
          TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-
-         //*****************************************************************************
-         //
-         // C of centimeters
-         //
-         //***************************************************************************** 
-         
+        
          for(int i = 0; i < 5; i++)
          {
             TIMER2_CTL_R |= 0x01;                              // enable Timer2A
@@ -443,11 +427,6 @@ void main(int argc, char const *argv[])
          while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
          TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
 
-         //*****************************************************************************
-         //
-         // M of centimeters
-         //
-         //***************************************************************************** 
          for(int i = 0; i < 5; i++)
          {
             TIMER2_CTL_R |= 0x01;                              // enable Timer2A
@@ -475,11 +454,6 @@ void main(int argc, char const *argv[])
          while((TIMER1_RIS_R & (1 << 4)) == 0);                // match value after 18ms
          TIMER1_ICR_R |= (1 << 4);                             // clear Timer1A match flag
 
-         //*****************************************************************************
-         //
-         // M of centimeters
-         //
-         //***************************************************************************** 
          for(int i = 4; i < 0; i--)
          {
             TIMER2_CTL_R |= 0x01;                              // enable Timer2A
@@ -494,12 +468,7 @@ void main(int argc, char const *argv[])
          while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
          TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
 
-         //*****************************************************************************
-         //
-         // C of centimeters
-         //
-         //***************************************************************************** 
-                  for(int i = 4; i < 0; i--)
+         for(int i = 4; i < 0; i--)
          {
             TIMER2_CTL_R |= 0x01;                              // enable Timer2A
             GPIO_PORTM_DATA_R |= arrc[i];                      // PM(7:0) for LED_C
@@ -516,11 +485,6 @@ void main(int argc, char const *argv[])
          while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
          TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
 
-         //*****************************************************************************
-         //
-         // second number of measure distance
-         //
-         //***************************************************************************** 
          outputDigit(secondDigit, new_input);
 
          // one void column
@@ -529,11 +493,6 @@ void main(int argc, char const *argv[])
          while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
          TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
 
-         //*****************************************************************************
-         //
-         // first number of measure distance
-         //
-         //***************************************************************************** 
          outputDigit(firstDigit, new_input);
          
          // end of measure display
