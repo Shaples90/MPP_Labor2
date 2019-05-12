@@ -403,7 +403,6 @@ void ledOutputLetterC(unsigned char input)
       }
    }
 }
-
 void ledOutputLetterM(unsigned char input)
 {
    unsigned char arrm[5] = LED_C;
@@ -443,7 +442,6 @@ void oneSideBlackBar(void)
    while((TIMER1_RIS_R & (1 << 4)) == 0); // match value after 18ms
    TIMER1_ICR_R |= (1 << 4);              // clear Timer1A match flag
 }
-
 void anotherSideBlackbar(void)
 {
    // end of measure display
@@ -469,13 +467,13 @@ void main(int argc, char const *argv[])
 
    while (1)
    {
+      GPIO_PORTD_DATA_R |= 0x02;                               // PD(1) to HIGH for measure-trigger
+
       // first and second digits of measured distance
       firstDigit = ultrasonicMeasureDistance() / 10;           // locally save firstDigit of measured distance
       changeDigit = firstDigit;
       changeDigit *= 10;
       secondDigit = ultrasonicMeasureDistance() - changeDigit; // locally save secondDigit of measured distance
-
-      GPIO_PORTD_DATA_R |= 0x02; // PD(1) to HIGH for measure-trigger
 
       // positive edge Pendulum-LED
       newPendulumInput = GPIO_PORTL_DATA_R;                                      // PL(0) read input edge
