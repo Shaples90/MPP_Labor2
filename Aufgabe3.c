@@ -364,7 +364,7 @@ void ledOutputDigit(int digit, unsigned short input)
 // LED-space-output function
 //
 //*****************************************************************************
-void ledSpaceOutput(void)
+void ledOutputSpace(void)
 {
    TIMER2_CTL_R |= 0x01;                              // enable Timer2A
    GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
@@ -481,12 +481,12 @@ void main(int argc, char const *argv[])
       {  
          oneSideBlackBar();
          ledOutputDigit(firstDigit, newPendulumInput);         
-         ledSpaceOutput();         
+         ledOutputSpace();         
          ledOutputDigit(secondDigit, newPendulumInput);
-         ledSpaceOutput();
-         ledSpaceOutput();
+         ledOutputSpace();
+         ledOutputSpace();
          ledOutputLetterC(newPendulumInput);
-         ledSpaceOutput();
+         ledOutputSpace();
          ledOutputLetterM(newPendulumInput);
          anotherSideBlackbar();                                            
       }
@@ -496,12 +496,12 @@ void main(int argc, char const *argv[])
       {
          oneSideBlackBar();
          ledOutputLetterM(newPendulumInput);
-         ledSpaceOutput();
+         ledOutputSpace();
          ledOutputLetterC(newPendulumInput);
-         ledSpaceOutput();
-         ledSpaceOutput();
+         ledOutputSpace();
+         ledOutputSpace();
          ledOutputDigit(secondDigit, newPendulumInput);
-         ledSpaceOutput();
+         ledOutputSpace();
          ledOutputDigit(firstDigit, newPendulumInput);
          anotherSideBlackbar();
       }
