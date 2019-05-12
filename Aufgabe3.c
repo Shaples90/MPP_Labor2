@@ -78,10 +78,10 @@ void configureTimer(void)
 }
 //*****************************************************************************
 //
-// ultrasonic-measure-time function
+// ultrasonic-measure-distance function
 //
 //*****************************************************************************
-int ultrasonicMeasureTime(void)
+int ultrasonicMeasureDistance(void)
 {
    int measureDistance, timeMicroSeconds, timeMilliSeconds;
    GPIO_PORTD_DATA_R &= ~0x02;                                          // PD(1) to LOW, negative-edge, start measuring
@@ -459,7 +459,7 @@ void anotherSideBlackbar(void)
 //*****************************************************************************
 void main(int argc, char const *argv[])
 { 
-   int firstDigit, secondDigit, changeDigit;
+   int firstDigit, secondDigit, changeDigit = 0;
    unsigned char oldPendulumInput, newPendulumInput = 0x00;          
 
    configurePorts();
@@ -469,23 +469,15 @@ void main(int argc, char const *argv[])
 
    while (1)
    {
-      //*****************************************************************************
-      //
       // first and second digits of measured distance
-      //
-      //*****************************************************************************
-      firstDigit = ultrasonicMeasureTime() / 10;           // locally save firstDigit of measured distance
+      firstDigit = ultrasonicMeasureDistance() / 10;           // locally save firstDigit of measured distance
       changeDigit = firstDigit;
       changeDigit *= 10;
-      secondDigit = ultrasonicMeasureTime() - changeDigit; // locally save secondDigit of measured distance
+      secondDigit = ultrasonicMeasureDistance() - changeDigit; // locally save secondDigit of measured distance
 
       GPIO_PORTD_DATA_R |= 0x02; // PD(1) to HIGH for measure-trigger
 
-      //*****************************************************************************
-      //
       // positive edge Pendulum-LED
-      //
-      //***************************************************************************** 
       newPendulumInput = GPIO_PORTL_DATA_R;                                      // PL(0) read input edge
       if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x01))   // positive-edge-signal
       {  
@@ -501,11 +493,7 @@ void main(int argc, char const *argv[])
          anotherSideBlackbar();                                            
       }
 
-      //*****************************************************************************
-      //
       // negative edge Pendulum-LED
-      //
-      //***************************************************************************** 
       else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x00)) // negative-edge-signal
       {
          oneSideBlackBar();
