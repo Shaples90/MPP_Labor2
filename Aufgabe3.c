@@ -80,10 +80,10 @@ void configureTimer(void)
 
 //*****************************************************************************
 //
-// LED-output function for measured distance (cm)
+// LED-number-output
 //
 //*****************************************************************************
-void outputDigit(int digit, unsigned short input)
+void ledOutputDigit(int digit, unsigned short input)
 {
    if((0 == digit) && (0x01 == input))
    {
@@ -342,6 +342,83 @@ void outputDigit(int digit, unsigned short input)
 
 //*****************************************************************************
 //
+// LED-space-output
+//
+//*****************************************************************************
+void ledSpaceOutput(void)
+{
+   TIMER2_CTL_R |= 0x01;                              // enable Timer2A
+   GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
+   while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
+   TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
+}
+
+//*****************************************************************************
+//
+// LED-letter-c-output
+//
+//*****************************************************************************
+void ledOutputLetterC(unsigned char input)
+{  
+   unsigned char arrc[5] = LED_C;
+   if(0x01 == input)
+   {
+      for(int i = 0; i < 5; i++)
+      {
+         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
+         GPIO_PORTM_DATA_R |= arrc[i];                      // PM(7:0) for LED_C
+         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
+         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
+         GPIO_PORTM_DATA_R &= ~0xFF;
+      }
+   }
+   else if(0x00 == input)
+   {
+      for(int i = 4; i < 0; i--)
+      {
+         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
+         GPIO_PORTM_DATA_R |= arrc[i];                      // PM(7:0) for LED_C
+         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
+         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
+         GPIO_PORTM_DATA_R &= ~0xFF;
+      }
+   }
+}
+
+//*****************************************************************************
+//
+// LED-letter-m-output
+//
+//*****************************************************************************
+void ledOutputLetterM(unsigned char input)
+{
+   unsigned char arrm[5] = LED_C;
+   if(0x01 == input)
+   {
+      for(int i = 0; i < 5; i++)
+      {
+         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
+         GPIO_PORTM_DATA_R |= arrm[i];                      // PM(7:0) for LED_M
+         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
+         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
+         GPIO_PORTM_DATA_R &= ~0xFF;
+      }
+   }
+   else if(0x00 == input)
+   {
+      for(int i = 4; i < 0; i--)
+      {
+         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
+         GPIO_PORTM_DATA_R |= arrm[i];                      // PM(7:0) for LED_M
+         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
+         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
+         GPIO_PORTM_DATA_R &= ~0xFF;
+      }
+   }
+}
+
+//*****************************************************************************
+//
 // main function
 //
 //*****************************************************************************
@@ -349,8 +426,6 @@ void main(int argc, char const *argv[])
 { 
    int measureDistance, timeMicroSeconds, timeMilliSeconds, firstDigit, secondDigit, changeDigit;
    unsigned char old_input, new_input = 0x00;          
-   unsigned char arrc[5] = LED_C;
-   unsigned char arrm[5] = LED_M;
 
    configurePorts();
    configureTimer();
@@ -393,48 +468,14 @@ void main(int argc, char const *argv[])
          while((TIMER1_RIS_R & (1 << 4)) == 0);             // match value after 18ms
          TIMER1_ICR_R |= (1 << 4);                          // clear Timer1A match flag
 
-         outputDigit(firstDigit, new_input);
-         
-         // one void column
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         
-         outputDigit(secondDigit, new_input);
-
-         // two void columns
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         TIMER2_CTL_R |= 0x01;                              // re-enable Timer2A
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-        
-         for(int i = 0; i < 5; i++)
-         {
-            TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-            GPIO_PORTM_DATA_R |= arrc[i];                      // PM(7:0) for LED_C
-            while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-            TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-            GPIO_PORTM_DATA_R &= ~0xFF;
-         }
-
-         // one void column
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-
-         for(int i = 0; i < 5; i++)
-         {
-            TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-            GPIO_PORTM_DATA_R |= arrm[i];                      // PM(7:0) for LED_M
-            while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-            TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-            GPIO_PORTM_DATA_R &= ~0xFF;
-         }
+         ledOutputDigit(firstDigit, new_input);         
+         ledSpaceOutput();         
+         ledOutputDigit(secondDigit, new_input);
+         ledSpaceOutput();
+         ledSpaceOutput();
+         ledOutputLetterC(new_input);
+         ledSpaceOutput();
+         ledOutputLetterM(new_input);
 
          // end of measure display
          while((TIMER1_RIS_R & (1 << 0)) == 0);             // time-out after 42ms
@@ -454,46 +495,14 @@ void main(int argc, char const *argv[])
          while((TIMER1_RIS_R & (1 << 4)) == 0);                // match value after 18ms
          TIMER1_ICR_R |= (1 << 4);                             // clear Timer1A match flag
 
-         for(int i = 4; i < 0; i--)
-         {
-            TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-            GPIO_PORTM_DATA_R |= arrm[i];                      // PM(7:0) for LED_M
-            while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-            TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-            GPIO_PORTM_DATA_R &= ~0xFF;
-         }
-         // one void column
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-
-         for(int i = 4; i < 0; i--)
-         {
-            TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-            GPIO_PORTM_DATA_R |= arrc[i];                      // PM(7:0) for LED_C
-            while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-            TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-            GPIO_PORTM_DATA_R &= ~0xFF;
-         }
-         // two void columns
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         TIMER2_CTL_R |= 0x01;                              // re-enable Timer2A
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-
-         outputDigit(secondDigit, new_input);
-
-         // one void column
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to LOW
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-
-         outputDigit(firstDigit, new_input);
+         ledOutputLetterM(new_input);
+         ledSpaceOutput();
+         ledOutputLetterC(new_input);
+         ledSpaceOutput();
+         ledSpaceOutput();
+         ledOutputDigit(secondDigit, new_input);
+         ledSpaceOutput();
+         ledOutputDigit(firstDigit, new_input);
          
          // end of measure display
          while((TIMER1_RIS_R & (1 << 0)) == 0);             // time-out after 42ms
