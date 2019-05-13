@@ -17,7 +17,7 @@
 #define LED_NINE  { 0x79, 0x49, 0x49, 0x49, 0x7F }
 
 #define LED_C     { 0x0F, 0x09, 0x09, 0x09, 0x09 }
-#define LED_M     { 0x0F, 0x08, 0x0F, 0x08, 0x0F }
+#define LED_M     { 0x0F, 0x08, 0x0F, 0x08, 0x0F } 
 
 void wait(unsigned long time)
 {
@@ -36,12 +36,11 @@ void configurePorts(void)
    SYSCTL_RCGCGPIO_R |= (1 << 3) | (1 << 10) | (1 << 11);            // clock enable port D,L,M
    while(!(SYSCTL_PRGPIO_R & ((1 << 3) | (1 << 10) | (1 << 11))));   // wait for port D,L,M clock
    GPIO_PORTD_DEN_R |= 0x03;                                         // PD(1:0) enable
-   GPIO_PORTL_DEN_R |= 0x01;                                         // PL(0) enable
+   GPIO_PORTL_DEN_R |= (1 << 4);                                     // PL(4) enable
    GPIO_PORTM_DEN_R |= 0xFF;                                         // PM(7:0) enable
-   GPIO_PORTD_AFSEL_R |= (1 << 0);                                   // PD(0) alternate function
-   GPIO_PORTD_PCTL_R |= 0x03;                                        // PD(0) connected to Timer0A
-   GPIO_PORTD_DIR_R |= 0x02;                                         // PD(1) define output
-   GPIO_PORTL_DIR_R |= 0x00;                                         // PL(0) define input
+   GPIO_PORTL_AFSEL_R |= (1 << 4);                                   // PL(4) alternate function
+   GPIO_PORTL_PCTL_R |= 0x00030000;                                  // PL(4) connected to Timer0A
+   GPIO_PORTD_DIR_R |= 0x01;                                         // PD(0) define output
    GPIO_PORTM_DIR_R |= 0xFF;                                         // PM(7:0) define output
 } 
 
@@ -50,11 +49,11 @@ void configureTimer(void)
    // configure Timer 0 for sensor
    SYSCTL_RCGCTIMER_R |= (1 << 0);        // clock enable Timer0
    while(!(SYSCTL_PRTIMER_R & (1 << 0))); // wait for Timer0 clock
-   TIMER0_CTL_R &= ~0x01;                 // disable Timer0A for config
+   TIMER0_CTL_R &= ~0x01;                 // disable Timer0 for config
    TIMER0_CFG_R = 0x04;                   // 2 x 16-bit mode
    TIMER0_TAMR_R |= (1 << 2) | 0x03;      // edge time mode, capture mode
    TIMER0_TAILR_R = 0xFFFF;               // ILR = 65535
-   TIMER0_CTL_R |= 0x000C;                // both edges
+   TIMER0_CTL_R |= 0x0C;                  // both edges
    TIMER0_ICR_R |= 0x001F;                // clear all flags Timer0A
 
    // configure Timer 1 for swinging-led-area (24ms)
@@ -76,6 +75,7 @@ void configureTimer(void)
    TIMER2_TAPR_R = 1 - 1;                 // prescaler PR = ceil(16Mhz/2^16*0.001)-1
    TIMER2_TAILR_R = 16000 - 1;            // ILR = ceil(16Mhz/1*0,001s)-1
 }
+
 //*****************************************************************************
 //
 // ultrasonic-measure-distance function
@@ -84,7 +84,8 @@ void configureTimer(void)
 int ultrasonicMeasureDistance(void)
 {
    int measureDistance, timeMicroSeconds, timeMilliSeconds;
-   GPIO_PORTD_DATA_R &= ~0x02;                                          // PD(1) to LOW, negative-edge, start measuring
+   GPIO_PORTD_DATA_R &= ~0x01;                                          // PD(0) to LOW, negative-edge, start measuring
+
    TIMER0_CTL_R |= 0x01;                                                // enable Timer0A
    while((TIMER0_RIS_R & (1 << 2)) == 0);                               // wait for capture event
    TIMER0_ICR_R |= (1 << 2);                                            // clear Timer0A capture event flag
@@ -462,12 +463,10 @@ void main(int argc, char const *argv[])
 
    configurePorts();
    configureTimer();
-   
-   GPIO_PORTD_DATA_R |= 0x02; // PD(1) to HIGH for measure-trigger
 
    while (1)
    {
-      GPIO_PORTD_DATA_R |= 0x02;                      // PD(1) to HIGH for measure-trigger
+      GPIO_PORTD_DATA_R |= 0x01;                      // PD(0) to HIGH for measure-trigger
 
       // first and second digits of measured distance
       measuredDistance = ultrasonicMeasureDistance();
@@ -477,7 +476,7 @@ void main(int argc, char const *argv[])
       secondDigit = measuredDistance - changeDigit;   // locally save secondDigit of measured distance
 
       // positive edge Pendulum-LED
-      newPendulumInput = GPIO_PORTL_DATA_R;                                      // PL(0) read input edge
+      newPendulumInput = GPIO_PORTD_DATA_R;                                      // PD(1) read input edge
       if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x01))   // positive-edge-signal
       {  
          oneSideBlackBar();
