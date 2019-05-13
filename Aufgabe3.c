@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "tm4c1294ncpdt.h"
 
-// connect PD(0) to LED(0), PD(1) to LED(1), ... , PD(7) to LED(7)
+// connect PM(0) to LED(0), PM(1) to LED(1), ... , PM(7) to LED(7)
 #define LED_ZERO  { 0x7F, 0x41, 0x41, 0x41, 0x7F }
 #define LED_ONE   { 0x00, 0x00, 0x00, 0x00, 0x7F }
 #define LED_TWO   { 0x4F, 0x49, 0x49, 0x49, 0x79 }
