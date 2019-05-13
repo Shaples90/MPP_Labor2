@@ -457,7 +457,7 @@ void anotherSideBlackbar(void)
 //*****************************************************************************
 void main(int argc, char const *argv[])
 { 
-   int firstDigit, secondDigit, changeDigit = 0;
+   int measuredDistance, firstDigit, secondDigit, changeDigit = 0;
    unsigned char oldPendulumInput, newPendulumInput = 0x00;          
 
    configurePorts();
@@ -467,13 +467,14 @@ void main(int argc, char const *argv[])
 
    while (1)
    {
-      GPIO_PORTD_DATA_R |= 0x02;                               // PD(1) to HIGH for measure-trigger
+      GPIO_PORTD_DATA_R |= 0x02;                      // PD(1) to HIGH for measure-trigger
 
       // first and second digits of measured distance
-      firstDigit = ultrasonicMeasureDistance() / 10;           // locally save firstDigit of measured distance
+      measuredDistance = ultrasonicMeasureDistance();
+      firstDigit = measuredDistance / 10;             // locally save firstDigit of measured distance
       changeDigit = firstDigit;
       changeDigit *= 10;
-      secondDigit = ultrasonicMeasureDistance() - changeDigit; // locally save secondDigit of measured distance
+      secondDigit = measuredDistance - changeDigit;   // locally save secondDigit of measured distance
 
       // positive edge Pendulum-LED
       newPendulumInput = GPIO_PORTL_DATA_R;                                      // PL(0) read input edge
