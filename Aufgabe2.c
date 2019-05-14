@@ -36,7 +36,6 @@ void main(int argc, char const *argv[])
    TIMER0_TAILR_R = 0xFFFF;               // ILR = 65535
    TIMER0_CTL_R |= 0x0C;                  // both edges
    TIMER0_ICR_R |= 0x001F;                // clear all flags Timer0A
-<<<<<<< HEAD
    
    // configure Timer 1 for 20ms
    SYSCTL_RCGCTIMER_R |= (1 << 1);        // clock enable Timer1
