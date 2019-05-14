@@ -91,7 +91,7 @@ int ultrasonicMeasureDistance(void)
    TIMER0_ICR_R |= (1 << 2);                                            // clear Timer0A capture event flag
    TIMER0_CTL_R |= 0x01;                                                // re-enable Timer0A
    while((TIMER0_RIS_R & (1 << 2)) == 0);                               // wait for capture event
-   timeMicroSeconds = ((unsigned short) (0xFFFF - TIMER0_TAR_R)) / 16;  // measured time in micro seconds
+   timeMicroSeconds = (((unsigned short) (0xFFFF - TIMER0_TAR_R)) / 16) / 2;  // measured time in micro seconds
    timeMilliSeconds = timeMicroSeconds * 0.001;                         // measured time in milli seconds
    measureDistance = timeMilliSeconds * 34.4;                           // measured time * rate of spread
    TIMER0_ICR_R |= (1 << 2);                                            // clear capture event flag
