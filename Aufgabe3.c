@@ -83,7 +83,7 @@ void configureTimer(void)
 //*****************************************************************************
 int ultrasonicMeasureDistance(void)
 {
-   unsigned long ulVal;
+   unsigned long ulVal1, ulVal2;
    double timeMicroSeconds, timeMilliSeconds;
    unsigned int measureDistance;                                  // PD(0) to LOW, negative-edge, start measuring
 
@@ -95,14 +95,18 @@ int ultrasonicMeasureDistance(void)
       wait(5000);
       GPIO_PORTD_AHB_DATA_R &= ~0x1;                              // PD(0) to LOW for measure trigger
    }
+   ulVal1 = TIMER0_TAR_R;                                         // save first timer-value at capture event
    TIMER0_ICR_R |= (1 << 2);                                      // clear Timer0a capture event flag
    TIMER0_CTL_R |= 0x01;                                          // re-enable Timer0A
    while((TIMER0_RIS_R & (1 << 2)) == 0);                         // wait for capture event
-   ulVal = TIMER0_TAR_R;                                          // save imter value at capture event
-   timeMicroSeconds = ((unsigned short) (0xFFFF - ulVal) / 16);
+   ulVal2 = TIMER0_TAR_R;                                         // save second timer-value at capture event
+   TIMER0_ICR_R |= (1 << 2);			                              // clear capture event flag
+   TIMER0_CTL_R &= ~0x01;                                         // disable Timer0a
+
+   timeMicroSeconds = ((ulVal2 - ulVal1) / 16);
    timeMilliSeconds = timeMicroSeconds * 0.001;
    measureDistance = timeMilliSeconds * 34.4;                         
-   TIMER0_ICR_R |= (1 << 2);			                              // clear capture event flag
+   
    return measureDistance;
 }
 

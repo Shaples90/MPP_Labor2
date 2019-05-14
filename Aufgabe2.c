@@ -13,7 +13,7 @@ void wait(unsigned long time)
 
 void main(int argc, char const *argv[])
 {
-   unsigned long ulVal;
+   unsigned long ulVal1, ulVal2;
    double timeMicroSeconds, timeMilliSeconds;
    unsigned int measureDistance;
 
@@ -48,8 +48,7 @@ void main(int argc, char const *argv[])
    
 
    while (1)
-   {
-      // synchronize to next edge     
+   {    
       TIMER0_CTL_R |= 0x01;                                          // enable Timer0A                                       
       while((TIMER0_RIS_R & (1 << 2)) == 0)                          // wait for capture event
       {
@@ -57,15 +56,19 @@ void main(int argc, char const *argv[])
     	  wait(5000);
     	  GPIO_PORTD_AHB_DATA_R &= ~0x1;                               // PD(0) to LOW for measure trigger
       }
+      ulVal1 = TIMER0_TAR_R;                                         // save first timer-value at capture event
       TIMER0_ICR_R |= (1 << 2);                                      // clear Timer0a capture event flag
       TIMER0_CTL_R |= 0x01;                                          // re-enable Timer0A
       while((TIMER0_RIS_R & (1 << 2)) == 0);                         // wait for capture event
-      ulVal = TIMER0_TAR_R;                                          // save imter value at capture event
-      timeMicroSeconds = ((unsigned short) (0xFFFF - ulVal) / 16);
+      ulVal2 = TIMER0_TAR_R;                                         // save second-timer value at capture event
+      TIMER0_ICR_R |= (1 << 2);			                              // clear capture event flag
+      TIMER0_CTL_R &= ~0x01;                                         // disable Timer0A
+
+      timeMicroSeconds = ((ulVal2 - ulVal1) / 16);
       timeMilliSeconds = timeMicroSeconds * 0.001;
       measureDistance = timeMilliSeconds * 34.4;                         
       printf("measure distance is: %d\n", measureDistance);
-      TIMER0_ICR_R |= (1 << 2);			                              // clear capture event flag
+
       TIMER1_CTL_R |= 0x01;                                          // enable Timer1A (20ms)
       while((TIMER1_RIS_R & (1 << 0)) == 0);                         // flag, wenn time-out
       TIMER0_ICR_R |= (1 << 0);                                      // clear time-out flag
