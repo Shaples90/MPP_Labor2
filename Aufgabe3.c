@@ -61,7 +61,7 @@ void configureTimer(void)
    while(!(SYSCTL_PRTIMER_R & (1 << 1))); // wait for Timer1 clock
    TIMER1_CTL_R &= ~0x01;                 // disable Timer1A for config
    TIMER1_CFG_R = 0x04;                   // 2 x 16-bit mode
-   TIMER1_TAMR_R |= ((1 << 5) | 0x02);    // match enable, count-down, periodic mode
+   TIMER1_TAMR_R |= ((1 << 5) | 0x01);    // match enable, count-down, one-shot mode
    TIMER1_TAPR_R = 11 - 1;                // prescaler PR = ceil(16Mhz/2^16*0.042s)-1
    TIMER1_TAILR_R = 61091 - 1;            // ILR = ceil(16Mhz/11*0.042s)-1
    TIMER1_TAMATCHR_R = 34909 - 1;         // MV = ceil(16Mhz/11*0.024s)-1
@@ -83,18 +83,26 @@ void configureTimer(void)
 //*****************************************************************************
 int ultrasonicMeasureDistance(void)
 {
-   int measureDistance, timeMicroSeconds, timeMilliSeconds;
-   GPIO_PORTD_DATA_R &= ~0x01;                                          // PD(0) to LOW, negative-edge, start measuring
+   unsigned long ulVal;
+   double timeMicroSeconds, timeMilliSeconds;
+   unsigned int measureDistance;                                  // PD(0) to LOW, negative-edge, start measuring
 
-   TIMER0_CTL_R |= 0x01;                                                // enable Timer0A
-   while((TIMER0_RIS_R & (1 << 2)) == 0);                               // wait for capture event
-   TIMER0_ICR_R |= (1 << 2);                                            // clear Timer0A capture event flag
-   TIMER0_CTL_R |= 0x01;                                                // re-enable Timer0A
-   while((TIMER0_RIS_R & (1 << 2)) == 0);                               // wait for capture event
-   timeMicroSeconds = (((unsigned short) (0xFFFF - TIMER0_TAR_R)) / 16) / 2;  // measured time in micro seconds
-   timeMilliSeconds = timeMicroSeconds * 0.001;                         // measured time in milli seconds
-   measureDistance = timeMilliSeconds * 34.4;                           // measured time * rate of spread
-   TIMER0_ICR_R |= (1 << 2);                                            // clear capture event flag
+   // synchronize to next edge     
+   TIMER0_CTL_R |= 0x01;                                          // enable Timer0A                                       
+   while((TIMER0_RIS_R & (1 << 2)) == 0)                          // wait for capture event
+   {
+      GPIO_PORTD_AHB_DATA_R |= 0x1;              						// PD(0) to HIGH for measure trigger
+      wait(5000);
+      GPIO_PORTD_AHB_DATA_R &= ~0x1;                              // PD(0) to LOW for measure trigger
+   }
+   TIMER0_ICR_R |= (1 << 2);                                      // clear Timer0a capture event flag
+   TIMER0_CTL_R |= 0x01;                                          // re-enable Timer0A
+   while((TIMER0_RIS_R & (1 << 2)) == 0);                         // wait for capture event
+   ulVal = TIMER0_TAR_R;                                          // save imter value at capture event
+   timeMicroSeconds = ((unsigned short) (0xFFFF - ulVal) / 16);
+   timeMilliSeconds = timeMicroSeconds * 0.001;
+   measureDistance = timeMilliSeconds * 34.4;                         
+   TIMER0_ICR_R |= (1 << 2);			                              // clear capture event flag
    return measureDistance;
 }
 
@@ -103,21 +111,9 @@ int ultrasonicMeasureDistance(void)
 // LED-number-output function
 //
 //*****************************************************************************
-void ledOutputDigit(int digit, unsigned short input)
+void ledOutputDigit(int digit)
 {
-   if((0 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_ZERO;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_ZERO
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if ((0 == digit) && (0x00 == input))
+   if (0 == digit)
    {
       unsigned char arr[5] = LED_ZERO;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -129,19 +125,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((1 == digit) && (0x01 == input))                 
-   {
-      unsigned char arr[5] = LED_ONE;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_ONE
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if ((1 == digit) && (0x00 == input))
+   else if (1 == digit)
    {
       unsigned char arr[5] = LED_ONE;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -153,19 +137,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((2 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_TWO;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_TWO
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if((2 == digit) && (0x00 == input))
+   else if(2 == digit)
    {
       unsigned char arr[5] = LED_TWO;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -177,19 +149,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((3 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_THREE;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_THREE
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if((3 == digit) && (0x00 == input))
+   else if(3 == digit)
    {
       unsigned char arr[5] = LED_THREE;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -201,19 +161,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((4 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_FOUR;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_FOUR
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if((4 == digit) && (0x00 == input))
+   else if(4 == digit)
    {
       unsigned char arr[5] = LED_FOUR;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -225,19 +173,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((5 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_FIVE;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_FIVE
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if((5 == digit) && (0x00 == input))
+   else if(5 == digit)
    {
       unsigned char arr[5] = LED_FIVE;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -249,19 +185,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((6 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_SIX;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_SIX
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if((6 == digit) && (0x00 == input))
+   else if(6 == digit)
    {
       unsigned char arr[5] = LED_SIX;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -273,19 +197,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((7 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_SEVEN;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_SEVEN
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if((7 == digit) && (0x00 == input))
+   else if(7 == digit)
    {
       unsigned char arr[5] = LED_SEVEN;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -297,19 +209,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((8 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_EIGHT;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_EIGHT
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if((8 == digit) && (0x00 == input))
+   else if(8 == digit)
    {
       unsigned char arr[5] = LED_EIGHT;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -321,19 +221,7 @@ void ledOutputDigit(int digit, unsigned short input)
          GPIO_PORTM_DATA_R &= ~0xFF;
       }
    }
-   else if((9 == digit) && (0x01 == input))
-   {
-      unsigned char arr[5] = LED_NINE;
-      for(int i = 0; i < 5; i++)                            // count-up
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arr[i];                       // PM(7:0) for LED_NINE
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
-   else if((9 == digit) && (0x00 == input))
+   else if(9 == digit)
    {
       unsigned char arr[5] = LED_NINE;
       for(int i = 4; i < 0; i--)                            // count-down
@@ -378,57 +266,31 @@ void ledOutputSpace(void)
 // LED-letter-output functions
 //
 //*****************************************************************************
-void ledOutputLetterC(unsigned char input)
+void ledOutputLetterC(void)
 {  
    unsigned char arrc[5] = LED_C;
-   if(0x01 == input)
+   for(int i = 4; i < 0; i--)
    {
-      for(int i = 0; i < 5; i++)
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arrc[i];                      // PM(7:0) for LED_C
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
+      TIMER2_CTL_R |= 0x01;                              // enable Timer2A
+      GPIO_PORTM_DATA_R |= arrc[i];                      // PM(7:0) for LED_C
+      while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
+      TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
+      GPIO_PORTM_DATA_R &= ~0xFF;
    }
-   else if(0x00 == input)
-   {
-      for(int i = 4; i < 0; i--)
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arrc[i];                      // PM(7:0) for LED_C
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
+   
 }
-void ledOutputLetterM(unsigned char input)
+void ledOutputLetterM(void)
 {
    unsigned char arrm[5] = LED_C;
-   if(0x01 == input)
+   for(int i = 4; i < 0; i--)
    {
-      for(int i = 0; i < 5; i++)
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arrm[i];                      // PM(7:0) for LED_M
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
+      TIMER2_CTL_R |= 0x01;                              // enable Timer2A
+      GPIO_PORTM_DATA_R |= arrm[i];                      // PM(7:0) for LED_M
+      while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
+      TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
+      GPIO_PORTM_DATA_R &= ~0xFF;
    }
-   else if(0x00 == input)
-   {
-      for(int i = 4; i < 0; i--)
-      {
-         TIMER2_CTL_R |= 0x01;                              // enable Timer2A
-         GPIO_PORTM_DATA_R |= arrm[i];                      // PM(7:0) for LED_M
-         while((TIMER2_RIS_R & (1 << 0)) == 0);             // time-out value after 1ms
-         TIMER2_ICR_R |= (1 << 0);                          // clear Timer2A time-out flag
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
-   }
+   
 }
 //*****************************************************************************
 //
@@ -466,43 +328,30 @@ void main(int argc, char const *argv[])
 
    while (1)
    {
-      GPIO_PORTD_DATA_R |= 0x01;                      // PD(0) to HIGH for measure-trigger
-
-      // first and second digits of measured distance
-      measuredDistance = ultrasonicMeasureDistance();
-      firstDigit = measuredDistance / 10;             // locally save firstDigit of measured distance
-      changeDigit = firstDigit;
-      changeDigit *= 10;
-      secondDigit = measuredDistance - changeDigit;   // locally save secondDigit of measured distance
-
       // positive edge Pendulum-LED
       newPendulumInput = GPIO_PORTD_DATA_R;                                      // PD(1) read input edge
       if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x01))   // positive-edge-signal
       {  
-         oneSideBlackBar();
-         ledOutputDigit(firstDigit, newPendulumInput);         
-         ledOutputSpace();         
-         ledOutputDigit(secondDigit, newPendulumInput);
-         ledOutputSpace();
-         ledOutputSpace();
-         ledOutputLetterC(newPendulumInput);
-         ledOutputSpace();
-         ledOutputLetterM(newPendulumInput);
-         anotherSideBlackbar();                                            
+         // first and second digits of measured distance
+         measuredDistance = ultrasonicMeasureDistance(); // measure time of echo-signal and calculate into distance(cm)
+         firstDigit = measuredDistance / 10;             // locally save firstDigit of measured distance
+         changeDigit = firstDigit;
+         changeDigit *= 10;
+         secondDigit = measuredDistance - changeDigit;   // locally save secondDigit of measured distance                                         
       }
 
       // negative edge Pendulum-LED
       else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x00)) // negative-edge-signal
       {
          oneSideBlackBar();
-         ledOutputLetterM(newPendulumInput);
+         ledOutputLetterM();
          ledOutputSpace();
-         ledOutputLetterC(newPendulumInput);
+         ledOutputLetterC();
          ledOutputSpace();
          ledOutputSpace();
-         ledOutputDigit(secondDigit, newPendulumInput);
+         ledOutputDigit(secondDigit);
          ledOutputSpace();
-         ledOutputDigit(firstDigit, newPendulumInput);
+         ledOutputDigit(firstDigit);
          anotherSideBlackbar();
       }
       oldPendulumInput = newPendulumInput;   // store new signal to old input signal
