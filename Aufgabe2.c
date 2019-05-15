@@ -15,7 +15,7 @@ void main(int argc, char const *argv[])
 {
    unsigned long ulVal1, ulVal2;
    double timeMicroSeconds, timeMilliSeconds;
-   unsigned int measureDistance;
+   unsigned long measureDistance;
 
    // configure PD(0) and PL(4)
    SYSCTL_RCGCGPIO_R |= ((1 << 3) | (1 << 10));          // clock enable port D and L
@@ -33,10 +33,11 @@ void main(int argc, char const *argv[])
    TIMER0_CTL_R &= ~0x01;                 // disable Timer0 for config
    TIMER0_CFG_R = 0x04;                   // 2 x 16-bit mode
    TIMER0_TAMR_R |= (1 << 2) | 0x03;      // edge time mode, capture mode
-   TIMER0_TAILR_R = 0xFFFF;               // ILR = 65535
+
+   TIMER0_TAILR_R = 0xFFFF;             	// ILR
    TIMER0_CTL_R |= 0x0C;                  // both edges
    TIMER0_ICR_R |= 0x001F;                // clear all flags Timer0A
-   
+
    // configure Timer 1 for 20ms
    SYSCTL_RCGCTIMER_R |= (1 << 1);        // clock enable Timer1
    while(!(SYSCTL_PRTIMER_R & (1 << 1))); // wait for Timer1 clock
@@ -45,15 +46,14 @@ void main(int argc, char const *argv[])
    TIMER1_TAMR_R |= 0x01;                 // match disable, count-down, one-shot mode
    TIMER1_TAPR_R = 5 - 1;                 // prescaler PR = 5-1
    TIMER1_TAILR_R = 64000 - 1;            // ILR = 64000 - 1
-   
+
 
    while (1)
-   {    
-      TIMER0_CTL_R |= 0x01;                                          // enable Timer0A                                       
+   {
+      TIMER0_CTL_R |= 0x01;                                          // enable Timer0A
       while((TIMER0_RIS_R & (1 << 2)) == 0)                          // wait for capture event
       {
     	  GPIO_PORTD_AHB_DATA_R |= 0x1;              						// PD(0) to HIGH for measure trigger
-    	  wait(5000);
     	  GPIO_PORTD_AHB_DATA_R &= ~0x1;                               // PD(0) to LOW for measure trigger
       }
       ulVal1 = TIMER0_TAR_R;                                         // save first timer-value at capture event
@@ -61,16 +61,16 @@ void main(int argc, char const *argv[])
       TIMER0_CTL_R |= 0x01;                                          // re-enable Timer0A
       while((TIMER0_RIS_R & (1 << 2)) == 0);                         // wait for capture event
       ulVal2 = TIMER0_TAR_R;                                         // save second-timer value at capture event
-      TIMER0_ICR_R |= (1 << 2);			                              // clear capture event flag
+      TIMER0_ICR_R |= (1 << 2);			                             // clear capture event flag
       TIMER0_CTL_R &= ~0x01;                                         // disable Timer0A
 
-      timeMicroSeconds = ((ulVal2 - ulVal1) / 16);
-      timeMilliSeconds = timeMicroSeconds * 0.001;
-      measureDistance = timeMilliSeconds * 34.4;                         
-      printf("measure distance is: %d\n", measureDistance);
-
-      TIMER1_CTL_R |= 0x01;                                          // enable Timer1A (20ms)
-      while((TIMER1_RIS_R & (1 << 0)) == 0);                         // flag, wenn time-out
-      TIMER0_ICR_R |= (1 << 0);                                      // clear time-out flag
+      if(ulVal1 > ulVal2)
+      {
+		  timeMicroSeconds = ((unsigned short) ((0xFFFF - ulVal2) - (0xFFFF - ulVal1)) / 32);
+		  timeMilliSeconds = timeMicroSeconds * 0.001;
+		  measureDistance = timeMilliSeconds * 34.4;
+		  printf("measure distance is: %d\n", measureDistance);
+      }
+      //wait(1000000);
    }
 }
