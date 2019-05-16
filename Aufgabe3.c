@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "tm4c1294ncpdt.h"
-#include <time.h>
 
 // connect PM(0) to LED(0), PM(1) to LED(1), ... , PM(7) to LED(7)
 #define LED_ZERO  { 0x7F, 0x41, 0x41, 0x41, 0x7F }
@@ -34,10 +33,10 @@ void wait(unsigned long time)
 void configurePorts(void)
 {
    // configure PD(1:0), PL(0), PM(7:0)
-   SYSCTL_RCGCGPIO_R |= ((1 << 3) | (1 << 10) | (1 << 11));          // clock enable port D,K,L,M
+   SYSCTL_RCGCGPIO_R |= ((1 << 3) | (1 << 10) | (1 << 11));          // clock enable port D,L,M
    while(!(SYSCTL_PRGPIO_R & ((1 << 3) | (1 << 10) | (1 << 11))));   // wait for port D,L,M clock
    GPIO_PORTD_AHB_DEN_R |= 0x01;                                     // PD(0) enable
-   GPIO_PORTL_DEN_R |= ((1 << 4) | (1 << 0));                        // PL(4) enable PL(0)
+   GPIO_PORTL_DEN_R |= ((1 << 4) | (1 << 0));                        // PL(0), PL(4) enable 
    GPIO_PORTM_DEN_R |= 0xFF;                                         // PM(7:0) enable
    GPIO_PORTL_AFSEL_R |= (1 << 4);                                   // PL(4) alternate function
    GPIO_PORTL_PCTL_R |= 0x00030000;                                  // PL(4) connected to Timer0A
@@ -80,8 +79,8 @@ int ultrasonicMeasureDistance(void)
 	unsigned long measureDistance;
 
    // synchronize to next edge
-	TIMER0_CTL_R |= 0x01;                    // enable Timer0A
-   while((TIMER0_RIS_R & (1 << 2)) == 0)    // wait for capture event
+	TIMER0_CTL_R |= 0x01;                     // enable Timer0A
+   while((TIMER0_RIS_R & (1 << 2)) == 0)     // wait for capture event
    {
       GPIO_PORTD_AHB_DATA_R |= 0x1;          // PD(0) to HIGH for measure trigger
       GPIO_PORTD_AHB_DATA_R &= ~0x1;         // PD(0) to LOW for measure trigger
@@ -91,7 +90,7 @@ int ultrasonicMeasureDistance(void)
    TIMER0_CTL_R |= 0x01;                     // re-enable Timer0A
    while((TIMER0_RIS_R & (1 << 2)) == 0);    // wait for capture event
    ulVal2 = TIMER0_TAR_R;                    // save second-timer value at capture event
-   TIMER0_ICR_R |= (1 << 2);			     // clear capture event flag
+   TIMER0_ICR_R |= (1 << 2);			         // clear capture event flag
    TIMER0_CTL_R &= ~0x01;                    // disable Timer0A
 
    if(ulVal1 > ulVal2)
@@ -275,7 +274,6 @@ void oneSideBlackBar(void)
    GPIO_PORTM_DATA_R &= ~0xFF;            // low output signal to PM(7:0)
    while((TIMER1_RIS_R & (1 << 0)) == 0); // time-out value after 18ms
    TIMER1_ICR_R |= (1 << 0);              // clear Timer1A time-out flag
-   TIMER1_CTL_R &= ~0x01;                 // disable Timer1A
 }
 
 //*****************************************************************************
@@ -286,7 +284,7 @@ void oneSideBlackBar(void)
 void main(int argc, char const *argv[])
 {
    int static measuredDistance, firstDigit, secondDigit, changeDigit = 0;
-   unsigned static short oldPendulumInput, newPendulumInput = 0x00;
+   unsigned static short oldPendulumInput, newPendulumInput = 0x0;
 
    configurePorts();
    configureTimer();
