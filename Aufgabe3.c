@@ -240,7 +240,7 @@ void ledOutputSpace(void)
 //*****************************************************************************
 void ledOutputLetterC(void)
 {
-	int i = 0;
+   int i = 0;
    unsigned char arrc[5] = LED_C;
    for(i = 4; i < 0; i--)
    {
@@ -254,13 +254,13 @@ void ledOutputLetterC(void)
 void ledOutputLetterM(void)
 {
 	int i = 0;
-   unsigned char arrm[5] = LED_C;
+   unsigned char arrm[5] = LED_M;
    for(i = 4; i < 0; i--)
    {
       GPIO_PORTM_DATA_R |= arrm[i]; // PM(7:0) for LED_M
-      wait(200);
-      GPIO_PORTM_DATA_R &= ~0xFF;
-      wait(200);
+      wait(200);                    // würde es erstmal ohne wait-funktionversuchen und dann langsam hoch arbeiten warscheinlich ist 200 zu hoch
+      GPIO_PORTM_DATA_R &= ~0xFF; 
+      wait(200);                 
    }
 }
 //*****************************************************************************
