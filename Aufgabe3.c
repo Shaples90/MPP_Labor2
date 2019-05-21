@@ -137,7 +137,7 @@ void LED_output(unsigned char* arr)
 // LED-number-output function
 //
 //*****************************************************************************
-void ledOutputDigit(int digit)
+void binaryPatternDigit(int digit)
 {
    if (0 == digit)
    {
@@ -201,12 +201,12 @@ void ledOutputSpace(void)
 // LED-letter-output functions
 //
 //*****************************************************************************
-void ledOutputLetterC(void)
+void binaryPatternLetterC(void)
 {
 	unsigned char arr[5] = LED_C;
    LED_output(arr);
 }
-void ledOutputLetterM(void)
+void binaryPatternLetterM(void)
 {
 	unsigned char arr[5] = LED_M;
    LED_output(arr);
@@ -245,7 +245,7 @@ void main(int argc, char const *argv[])
       if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x1))    // positive-edge-signal
       {
          measuredDistance = ultrasonicMeasureDistance();       // measure time of echo-signal and calculate into distance(cm)
-         if(measuredDistance <= 69 && measuredDistance >= 6)
+         if(measuredDistance <= 69 && measuredDistance >= 6)   // possible measuring area for 16-bit-Timer with capture-mode
          {
         	   firstDigit = measuredDistance / 10;                // locally save firstDigit of measured distance
 			   changeDigit = firstDigit;
@@ -257,14 +257,14 @@ void main(int argc, char const *argv[])
 	   else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x0)) // negative-edge-signal
 	   {
          oneSideBlackBar();
-         ledOutputLetterM();
+         binaryPatternLetterM();
          ledOutputSpace();
-         ledOutputLetterC();
+         binaryPatternLetterC();
          ledOutputSpace();
          ledOutputSpace();
-         ledOutputDigit(secondDigit);
+         binaryPatternDigit(secondDigit);
          ledOutputSpace();
-         ledOutputDigit(firstDigit);
+         binaryPatternDigit(firstDigit);
       }
       oldPendulumInput = newPendulumInput;   // store new signal to old input signal
    }
