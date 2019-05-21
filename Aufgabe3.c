@@ -110,7 +110,7 @@ int ultrasonicMeasureDistance(void)
 //*****************************************************************************
 void LED_output(unsigned char* ptr)
 {
-   GPIO_PORTM_DATA_R |= (*(ptr + 4));
+   GPIO_PORTM_DATA_R |= (*(ptr + 4));  
 	wait(1000);
 	GPIO_PORTM_DATA_R &= ~0xFF;
 	wait(200);
@@ -242,7 +242,7 @@ void main(int argc, char const *argv[])
    while (1)
    {
       // positive edge Pendulum-LED
-      newPendulumInput = GPIO_PORTL_DATA_R;                                      // PK(0) read input edge
+      newPendulumInput = GPIO_PORTL_DATA_R;                                      // PL(0) read input edge
       if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x1))    // positive-edge-signal
       {
          measuredDistance = ultrasonicMeasureDistance();       // measure time of echo-signal and calculate into distance(cm)
