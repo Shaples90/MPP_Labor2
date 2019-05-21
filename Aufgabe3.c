@@ -108,25 +108,25 @@ int ultrasonicMeasureDistance(void)
 // LED-Output-function for letters and numbers
 //
 //*****************************************************************************
-void LED_output(unsigned char* arr)
+void LED_output(unsigned char* ptr)
 {
-   GPIO_PORTM_DATA_R |= (*(arr + 4));
+   GPIO_PORTM_DATA_R |= (*(ptr + 4));
 	wait(1000);
 	GPIO_PORTM_DATA_R &= ~0xFF;
 	wait(200);
-	GPIO_PORTM_DATA_R |= (*(arr + 3));
+	GPIO_PORTM_DATA_R |= (*(ptr + 3));
 	wait(1000);
 	GPIO_PORTM_DATA_R &= ~0xFF;
 	wait(200);
-	GPIO_PORTM_DATA_R |= (*(arr + 2));
+	GPIO_PORTM_DATA_R |= (*(ptr + 2));
 	wait(1000);
 	GPIO_PORTM_DATA_R &= ~0xFF;
 	wait(200);
-	GPIO_PORTM_DATA_R |= (*(arr + 1));
+	GPIO_PORTM_DATA_R |= (*(ptr + 1));
 	wait(1000);
 	GPIO_PORTM_DATA_R &= ~0xFF;
 	wait(200);
-	GPIO_PORTM_DATA_R |= (*(arr + 0));
+	GPIO_PORTM_DATA_R |= (*(ptr + 0));
 	wait(1000);
 	GPIO_PORTM_DATA_R &= ~0xFF;
 	wait(200);
