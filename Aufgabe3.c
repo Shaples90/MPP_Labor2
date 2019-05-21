@@ -25,9 +25,14 @@ void wait(unsigned long time)
    for (j = 0; j < time; j++);   // wait-loop
 }
 
-void process(unsigned char* arr)
+//*****************************************************************************
+//
+// LED-Output-function for letters and numbers
+//
+//*****************************************************************************
+void LED_output(unsigned char* arr)
 {
-	GPIO_PORTM_DATA_R |= (*(arr + 4));
+   GPIO_PORTM_DATA_R |= (*(arr + 4));
 	wait(1000);
 	GPIO_PORTM_DATA_R &= ~0xFF;
 	wait(200);
@@ -137,60 +142,55 @@ void ledOutputDigit(int digit)
    if (0 == digit)
    {
       unsigned char arr[5] = LED_ZERO;
-      process(arr);
+      LED_output(arr);
    }
    else if (1 == digit)
    {
       unsigned char arr[5] = LED_ONE;
-      process(arr);
+      LED_output(arr);
    }
    else if(2 == digit)
    {
       unsigned char arr[5] = LED_TWO;
-      process(arr);
+      LED_output(arr);
    }
    else if(3 == digit)
    {
       unsigned char arr[5] = LED_THREE;
-      process(arr);
+      LED_output(arr);
    }
    else if(4 == digit)
    {
       unsigned char arr[5] = LED_FOUR;
-      process(arr);
+      LED_output(arr);
    }
    else if(5 == digit)
    {
       unsigned char arr[5] = LED_FIVE;
-      process(arr);
+      LED_output(arr);
    }
    else if(6 == digit)
    {
       unsigned char arr[5] = LED_SIX;
-      process(arr);
+      LED_output(arr);
    }
    else if(7 == digit)
    {
       unsigned char arr[5] = LED_SEVEN;
-      process(arr);
+      LED_output(arr);
    }
    else if(8 == digit)
    {
       unsigned char arr[5] = LED_EIGHT;
-      process(arr);
+      LED_output(arr);
    }
    else if(9 == digit)
    {
       unsigned char arr[5] = LED_NINE;
-      process(arr);
+      LED_output(arr);
    }
 }
 
-//*****************************************************************************
-//
-// LED-space-output function
-//
-//*****************************************************************************
 void ledOutputSpace(void)
 {
    wait(800);
@@ -204,12 +204,12 @@ void ledOutputSpace(void)
 void ledOutputLetterC(void)
 {
 	unsigned char arr[5] = LED_C;
-   process(arr);
+   LED_output(arr);
 }
 void ledOutputLetterM(void)
 {
 	unsigned char arr[5] = LED_M;
-   process(arr);
+   LED_output(arr);
 }
 //*****************************************************************************
 //
@@ -242,15 +242,15 @@ void main(int argc, char const *argv[])
    {
       // positive edge Pendulum-LED
       newPendulumInput = GPIO_PORTL_DATA_R;                                      // PK(0) read input edge
-      if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x1))   // positive-edge-signal
+      if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x1))    // positive-edge-signal
       {
-         measuredDistance = ultrasonicMeasureDistance(); // measure time of echo-signal and calculate into distance(cm)
+         measuredDistance = ultrasonicMeasureDistance();       // measure time of echo-signal and calculate into distance(cm)
          if(measuredDistance <= 69 && measuredDistance >= 6)
          {
-        	 firstDigit = measuredDistance / 10;             // locally save firstDigit of measured distance
-			  changeDigit = firstDigit;
-			  changeDigit *= 10;
-			  secondDigit = measuredDistance - changeDigit;   // locally save secondDigit of measured distance
+        	   firstDigit = measuredDistance / 10;                // locally save firstDigit of measured distance
+			   changeDigit = firstDigit;
+			   changeDigit *= 10;
+			   secondDigit = measuredDistance - changeDigit;      // locally save secondDigit of measured distance
          }
       }
       // negative edge Pendulum-LED
