@@ -25,6 +25,30 @@ void wait(unsigned long time)
    for (j = 0; j < time; j++);   // wait-loop
 }
 
+void process(unsigned char* arr)
+{
+	GPIO_PORTM_DATA_R |= (*(arr + 4));
+	wait(1000);
+	GPIO_PORTM_DATA_R &= ~0xFF;
+	wait(200);
+	GPIO_PORTM_DATA_R |= (*(arr + 3));
+	wait(1000);
+	GPIO_PORTM_DATA_R &= ~0xFF;
+	wait(200);
+	GPIO_PORTM_DATA_R |= (*(arr + 2));
+	wait(1000);
+	GPIO_PORTM_DATA_R &= ~0xFF;
+	wait(200);
+	GPIO_PORTM_DATA_R |= (*(arr + 1));
+	wait(1000);
+	GPIO_PORTM_DATA_R &= ~0xFF;
+	wait(200);
+	GPIO_PORTM_DATA_R |= (*(arr + 0));
+	wait(1000);
+	GPIO_PORTM_DATA_R &= ~0xFF;
+	wait(200);
+}
+
 //*****************************************************************************
 //
 // port-timer-configuration functions
@@ -36,7 +60,7 @@ void configurePorts(void)
    SYSCTL_RCGCGPIO_R |= ((1 << 3) | (1 << 10) | (1 << 11));          // clock enable port D,L,M
    while(!(SYSCTL_PRGPIO_R & ((1 << 3) | (1 << 10) | (1 << 11))));   // wait for port D,L,M clock
    GPIO_PORTD_AHB_DEN_R |= 0x01;                                     // PD(0) enable
-   GPIO_PORTL_DEN_R |= ((1 << 4) | (1 << 0));                        // PL(0), PL(4) enable 
+   GPIO_PORTL_DEN_R |= ((1 << 4) | (1 << 0));                        // PL(0), PL(4) enable
    GPIO_PORTM_DEN_R |= 0xFF;                                         // PM(7:0) enable
    GPIO_PORTL_AFSEL_R |= (1 << 4);                                   // PL(4) alternate function
    GPIO_PORTL_PCTL_R |= 0x00030000;                                  // PL(4) connected to Timer0A
@@ -110,116 +134,55 @@ int ultrasonicMeasureDistance(void)
 //*****************************************************************************
 void ledOutputDigit(int digit)
 {
-	int i = 0;
    if (0 == digit)
    {
       unsigned char arr[5] = LED_ZERO;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(1000);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if (1 == digit)
    {
       unsigned char arr[5] = LED_ONE;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(1000);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if(2 == digit)
    {
       unsigned char arr[5] = LED_TWO;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(1000);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if(3 == digit)
    {
       unsigned char arr[5] = LED_THREE;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(1000);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if(4 == digit)
    {
       unsigned char arr[5] = LED_FOUR;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(1000);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if(5 == digit)
    {
       unsigned char arr[5] = LED_FIVE;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(1000);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if(6 == digit)
    {
       unsigned char arr[5] = LED_SIX;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(1000);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if(7 == digit)
    {
       unsigned char arr[5] = LED_SEVEN;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(200);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if(8 == digit)
    {
       unsigned char arr[5] = LED_EIGHT;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(200);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
    else if(9 == digit)
    {
       unsigned char arr[5] = LED_NINE;
-      for(i = 4; i < 0; i--)
-      {
-         GPIO_PORTM_DATA_R |= arr[i];
-         wait(1000);
-         GPIO_PORTM_DATA_R &= ~0xFF;
-         wait(200);
-      }
+      process(arr);
    }
 }
 
@@ -240,27 +203,13 @@ void ledOutputSpace(void)
 //*****************************************************************************
 void ledOutputLetterC(void)
 {
-   int i = 0;
-   unsigned char arrc[5] = LED_C;
-   for(i = 4; i < 0; i--)
-   {
-      GPIO_PORTM_DATA_R |= arrc[i]; // PM(7:0) for LED_C
-      wait(1000);
-      GPIO_PORTM_DATA_R &= ~0xFF;
-      wait(200);
-   }
+	unsigned char arr[5] = LED_C;
+   process(arr);
 }
 void ledOutputLetterM(void)
 {
-   int i = 0;
-   unsigned char arrm[5] = LED_M;
-   for(i = 4; i < 0; i--)
-   {
-      GPIO_PORTM_DATA_R |= arrm[i]; // PM(7:0) for LED_C
-      wait(1000);
-      GPIO_PORTM_DATA_R &= ~0xFF;
-      wait(200);
-   }
+	unsigned char arr[5] = LED_M;
+   process(arr);
 }
 //*****************************************************************************
 //
@@ -296,10 +245,13 @@ void main(int argc, char const *argv[])
       if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x1))   // positive-edge-signal
       {
          measuredDistance = ultrasonicMeasureDistance(); // measure time of echo-signal and calculate into distance(cm)
-         firstDigit = measuredDistance / 10;             // locally save firstDigit of measured distance
-         changeDigit = firstDigit;
-         changeDigit *= 10;
-         secondDigit = measuredDistance - changeDigit;   // locally save secondDigit of measured distance
+         if(measuredDistance <= 69 && measuredDistance >= 6)
+         {
+        	 firstDigit = measuredDistance / 10;             // locally save firstDigit of measured distance
+			  changeDigit = firstDigit;
+			  changeDigit *= 10;
+			  secondDigit = measuredDistance - changeDigit;   // locally save secondDigit of measured distance
+         }
       }
       // negative edge Pendulum-LED
 	   else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x0)) // negative-edge-signal
@@ -314,11 +266,8 @@ void main(int argc, char const *argv[])
          ledOutputSpace();
          ledOutputDigit(firstDigit);
       }
-      else
-      {
-         GPIO_PORTM_DATA_R &= ~0xFF;
-      }
       oldPendulumInput = newPendulumInput;   // store new signal to old input signal
    }
 }
+
 
