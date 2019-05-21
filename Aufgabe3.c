@@ -90,7 +90,7 @@ int ultrasonicMeasureDistance(void)
    TIMER0_CTL_R |= 0x01;                     // re-enable Timer0A
    while((TIMER0_RIS_R & (1 << 2)) == 0);    // wait for capture event
    ulVal2 = TIMER0_TAR_R;                    // save second-timer value at capture event
-   TIMER0_ICR_R |= (1 << 2);			         // clear capture event flag
+   TIMER0_ICR_R |= (1 << 2);		     // clear capture event flag
    TIMER0_CTL_R &= ~0x01;                    // disable Timer0A
 
    if(ulVal1 > ulVal2)
