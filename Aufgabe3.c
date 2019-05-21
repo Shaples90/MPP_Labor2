@@ -211,6 +211,7 @@ void binaryPatternLetterM(void)
 	unsigned char arr[5] = LED_M;
    LED_output(arr);
 }
+
 //*****************************************************************************
 //
 // black-bar functions
