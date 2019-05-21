@@ -42,7 +42,7 @@ void configurePorts(void)
    GPIO_PORTL_PCTL_R |= 0x00030000;                                  // PL(4) connected to Timer0A
    GPIO_PORTD_AHB_DIR_R |= 0x01;                                     // PD(0) define input
    GPIO_PORTM_DIR_R |= 0xFF;                                         // PM(7:0) define output
-   GPIO_PORTL_DIR_R |= 0x00;										            // PL(0) define input
+   GPIO_PORTL_DIR_R |= 0x00;					     // PL(0) define input
 }
 
 void configureTimer(void)
