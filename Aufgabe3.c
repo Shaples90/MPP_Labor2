@@ -258,14 +258,14 @@ void main(int argc, char const *argv[])
 	   else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x0)) // negative-edge-signal
 	   {
          oneSideBlackBar();
-         binaryPatternLetterM();
+         binaryPatternLetterM();             // LED-Output of M
          ledOutputSpace();
-         binaryPatternLetterC();
+         binaryPatternLetterC();             // LED-Output of C
          ledOutputSpace();
          ledOutputSpace();
-         binaryPatternDigit(secondDigit);
+         binaryPatternDigit(secondDigit);    // LED-Ouput of second digit
          ledOutputSpace();
-         binaryPatternDigit(firstDigit);
+         binaryPatternDigit(firstDigit);     // LED-Output of first digit
       }
       oldPendulumInput = newPendulumInput;   // store new signal to old input signal
    }
