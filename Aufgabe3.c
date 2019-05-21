@@ -253,6 +253,10 @@ void main(int argc, char const *argv[])
 			   changeDigit *= 10;
 			   secondDigit = measuredDistance - changeDigit;      // locally save secondDigit of measured distance
          }
+         else
+         {
+            GPIO_PORTM_DATA_R &= ~0xFF;                        // PM(7:0) to low if out of measuring range
+         }
       }
       // negative edge Pendulum-LED
 	   else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x0)) // negative-edge-signal
