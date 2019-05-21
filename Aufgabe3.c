@@ -79,7 +79,7 @@ int ultrasonicMeasureDistance(void)
    unsigned long measureDistance;
 
    // synchronize to next edge
-   TIMER0_CTL_R |= 0x01;                // enable Timer0A
+   TIMER0_CTL_R |= 0x01;                     // enable Timer0A
    while((TIMER0_RIS_R & (1 << 2)) == 0)     // wait for capture event
    {
       GPIO_PORTD_AHB_DATA_R |= 0x1;          // PD(0) to HIGH for measure trigger
