@@ -74,12 +74,12 @@ void configureTimer(void)
 //*****************************************************************************
 int ultrasonicMeasureDistance(void)
 {
-	unsigned long ulVal1, ulVal2;
-	double timeMicroSeconds, timeMilliSeconds;
-	unsigned long measureDistance;
+   unsigned long ulVal1, ulVal2;
+   double timeMicroSeconds, timeMilliSeconds;
+   unsigned long measureDistance;
 
    // synchronize to next edge
-	TIMER0_CTL_R |= 0x01;                     // enable Timer0A
+   TIMER0_CTL_R |= 0x01;                // enable Timer0A
    while((TIMER0_RIS_R & (1 << 2)) == 0)     // wait for capture event
    {
       GPIO_PORTD_AHB_DATA_R |= 0x1;          // PD(0) to HIGH for measure trigger
@@ -111,25 +111,25 @@ int ultrasonicMeasureDistance(void)
 void LED_output(unsigned char* ptr)
 {
    GPIO_PORTM_DATA_R |= (*(ptr + 4));  
-	wait(1000);
-	GPIO_PORTM_DATA_R &= ~0xFF;
-	wait(200);
-	GPIO_PORTM_DATA_R |= (*(ptr + 3));
-	wait(1000);
-	GPIO_PORTM_DATA_R &= ~0xFF;
-	wait(200);
-	GPIO_PORTM_DATA_R |= (*(ptr + 2));
-	wait(1000);
-	GPIO_PORTM_DATA_R &= ~0xFF;
-	wait(200);
-	GPIO_PORTM_DATA_R |= (*(ptr + 1));
-	wait(1000);
-	GPIO_PORTM_DATA_R &= ~0xFF;
-	wait(200);
-	GPIO_PORTM_DATA_R |= (*(ptr + 0));
-	wait(1000);
-	GPIO_PORTM_DATA_R &= ~0xFF;
-	wait(200);
+   wait(1000);
+   GPIO_PORTM_DATA_R &= ~0xFF;
+   wait(200);
+   GPIO_PORTM_DATA_R |= (*(ptr + 3));
+   wait(1000);
+   GPIO_PORTM_DATA_R &= ~0xFF;
+   wait(200);
+   GPIO_PORTM_DATA_R |= (*(ptr + 2));
+   wait(1000);
+   GPIO_PORTM_DATA_R &= ~0xFF;
+   wait(200);
+   GPIO_PORTM_DATA_R |= (*(ptr + 1));
+   wait(1000);
+   GPIO_PORTM_DATA_R &= ~0xFF;
+   wait(200);
+   GPIO_PORTM_DATA_R |= (*(ptr + 0));
+   wait(1000);
+   GPIO_PORTM_DATA_R &= ~0xFF;
+   wait(200);
 }
 
 //*****************************************************************************
@@ -203,12 +203,12 @@ void ledOutputSpace(void)
 //*****************************************************************************
 void binaryPatternLetterC(void)
 {
-	unsigned char arr[5] = LED_C;
+   unsigned char arr[5] = LED_C;
    LED_output(arr);
 }
 void binaryPatternLetterM(void)
 {
-	unsigned char arr[5] = LED_M;
+   unsigned char arr[5] = LED_M;
    LED_output(arr);
 }
 
@@ -248,15 +248,15 @@ void main(int argc, char const *argv[])
          measuredDistance = ultrasonicMeasureDistance();       // measure time of echo-signal and calculate into distance(cm)
          if(measuredDistance <= 69 && measuredDistance >= 6)   // possible measuring area for 16-bit-Timer with capture-mode
          {
-        	   firstDigit = measuredDistance / 10;                // locally save firstDigit of measured distance
-			   changeDigit = firstDigit;
-			   changeDigit *= 10;
-			   secondDigit = measuredDistance - changeDigit;      // locally save secondDigit of measured distance
+            firstDigit = measuredDistance / 10;                // locally save firstDigit of measured distance
+	    changeDigit = firstDigit;
+	    changeDigit *= 10;
+	    secondDigit = measuredDistance - changeDigit;      // locally save secondDigit of measured distance
          }
       }
       // negative edge Pendulum-LED
-	   else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x0)) // negative-edge-signal
-	   {
+      else if((oldPendulumInput != newPendulumInput) && (newPendulumInput == 0x0)) // negative-edge-signal
+      {
          oneSideBlackBar();
          binaryPatternLetterM();             // LED-Output of M
          ledOutputSpace();
