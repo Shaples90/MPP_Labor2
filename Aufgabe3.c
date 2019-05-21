@@ -144,7 +144,7 @@ void ledOutputDigit(int digit)
       unsigned char arr[5] = LED_ZERO;
       LED_output(arr);
    }
-   else if (1 == digit)
+   else if(1 == digit)
    {
       unsigned char arr[5] = LED_ONE;
       LED_output(arr);
