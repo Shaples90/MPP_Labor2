@@ -1,5 +1,4 @@
 // Laborversuch 2 Aufgabe 2
-// Vorlesung Seite 96 - 99
 
 #include "tm4c1294ncpdt.h"
 #include "stdio.h"
